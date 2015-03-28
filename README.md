@@ -7,9 +7,12 @@ The full text of the license is available here:  http://www.gnu.org/licenses/old
 See also:
      http://en.wikipedia.org/wiki/GPL 
 
+more information on this open hardware Solar concentrator can be found here: http://wiki.osefrance.org/doku.php?id=wiki:concentrateursolaire
 
-Présentation générale
-Objectif
+its authors are voulunteers of Open Source Ecologie (French chapter of Open Source Ecology) www.osefrance.fr
+
+#Présentation générale
+#Objectif
 
 L'objectif du projet est de fabriquer un concentrateur solaire, c'est à dire, un dispositif permettant de collecter l'énergie thermique solaire, c'est à dire :
 
@@ -27,7 +30,7 @@ Le changement climatique et la dépendance actuelle aux énergies fossiles nous 
 Utilisation : usages et finalité
 
 Nous préparons un développement en plusieurs étapes pour apprendre et progresser au fur et à mesure. Pendant les phases de design 3D et de développement, nous prévoyons de construire une maquette de table pour tester la forme générale et l’automatisation. Ensuite, un démonstrateur sera présenté pendant le forum Alternatiba, le 26 septembre 2015. Enfin, au cours de l’année 2016, un prototype grandeur nature (de 10 à 15 m²) sera conçu sur la base des connaissances engrangées.
-Démonstrateur (phase actuelle)
+#Démonstrateur (phase actuelle)
 
 L'objectif est de présenter la technique de la concentration solaire dans un but de diffusion des savoirs et de sensibilisation. Il est nécessaire d'aboutir à un produit fonctionnel, d'encombrement réduit, fonctionnant en France. La température atteinte sera fonction des optiques concentration et de la surface de miroir mais n'est pas une exigence.
 Prototype
@@ -44,8 +47,8 @@ La solution que nous avons retenue est un concentrateur solaire plan, à symétr
 Plus précisément, le miroir de Fresnel ou collecteur (1) concentre le rayonnement sur une ligne sur laquelle se trouve le récepteur (3). L'orientation globale du concentrateur solaire (CS) est fixée par l'axe du récepteur (axe x). Le suivi solaire selon un axe perpendiculaire (axe y) peut être réalisé aisément grâce à la rotation des facettes (3) du miroir de Fresnel. Par contre, la variation d'angle d'incidence parallèle à l'axe du CS (saisonnier ET quotidien) induit une translation entre l'image réfléchie par le collecteur et le récepteur, c'est à dire des pertes supplémentaires aux extrémités du récepteur (end loss).
 
 Figure: schéma du concentrateur et définition des axes. (1) Miroir de Fresnel ou collecteur; (2) facettes du miroir; (3) récepteur.
-Sous-projet : Démonstrateur
-Géométrie
+#Sous-projet : Démonstrateur
+#Géométrie
 
 Le miroir est horizontal et l'axe du CS (axe x) est orienté Nord-Sud. Cependant, le démonstrateur a vocation à être utiliser pour l'expérimentation donc une certaine flexibilité dans le positionnement entre le miroir et la structure supportant le récepteur est demandée.
 Contraintes particulières
@@ -64,7 +67,10 @@ Livraison 	1/09/2015
 De plus, on essayera d'utiliser au maximum des logiciels Open source. Le design étant réalisé en France, les plans utiliseront le système métrique et les normes de dessin françaises.
 Schéma de liaison
 
-Schéma de liaison
-Planning
+#Schéma de liaison
+http://wiki.osefrance.org/doku.php?id=wiki:concentrateursolaire#schema_de_liaison
+
+#Planning
+http://wiki.osefrance.org/doku.php?id=wiki:concentrateursolaire#planning
 
 équipes
