@@ -1,9 +1,14 @@
 # SolarConcentrator
 Open Hardware Solar concentrator - Linear Fresnel Reflector
 
- The OSÉ Solar concentrator is licensed under the GPL V2. Its derivatives can also be released under the GPL v.3
+The OSÉ Solar concentrator programs and designs are licensed under the GPL V2, GPL V3 or 
+Attribution-ShareAlike 4.0 International based on the most appropriate license for the type of work.
 
-The full text of the license is available here:  http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+The full text of the license GPL is available here:  
+http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+http://choosealicense.com/licenses/gpl-3.0/
+The creative common license is available here http://creativecommons.org/licenses/by-sa/4.0/
+
 See also:
      http://en.wikipedia.org/wiki/GPL 
 
