@@ -9,10 +9,9 @@ http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 http://choosealicense.com/licenses/gpl-3.0/
 The creative common license is available here http://creativecommons.org/licenses/by-sa/4.0/
 
-See also:
-     http://en.wikipedia.org/wiki/GPL 
 
-more information on this open hardware Solar concentrator can be found here: http://wiki.osefrance.org/doku.php?id=wiki:concentrateursolaire
+
+More information on this open hardware Solar concentrator can be found here: http://wiki.osefrance.org/doku.php?id=wiki:concentrateursolaire
 
 its authors are voulunteers of Open Source Ecologie (French chapter of Open Source Ecology) www.osefrance.fr
 
