@@ -1,11 +1,11 @@
-//**************************************************************
+﻿//**************************************************************
 //  Open Souce Écologie - Solar Heliostat controller
 //  Name: SeguiLSol25
 //  Authors: Andrea Sannuto @ndrsan, Jean Walter, 
 //  Website: www.osefrance.fr  @OSE_Fr
 //  Rev 001 
 //  Date 08 April 2015
-// features, micro step to follow the sun with 1 axis only, as fast as it can to be the most precise.  
+// features, micro step to follow the sun or heliostat with 1 axis only, as fast as it can to be the most precise.  
 // this software is released under the GPL V.3 
 // for more recents update, check out the git page: https://github.com/osefrance/SolarConcentrator
 //**************************************************************
