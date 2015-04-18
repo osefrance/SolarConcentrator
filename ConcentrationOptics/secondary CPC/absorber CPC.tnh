@@ -2,7 +2,7 @@
 
 
 TSceneKit {
-  fields [ SFFloat azimuth, SFFloat zenith, SFNode callbackList, SFNode cameraList, SFNode lightList, SFNode childList, SFNode transmissivity, SFNode topSeparator ]
+  fields [ SFDouble azimuth, SFDouble zenith, SFNode callbackList, SFNode cameraList, SFNode lightList, SFNode childList, SFNode transmissivity, SFNode topSeparator ]
   azimuth 1.5707964
   zenith 0.52359879
   lightList 
@@ -12,7 +12,7 @@ TSceneKit {
     Group {
 
       DEF Light+0 TLightKit {
-        fields [ SFFloat azimuth, SFFloat zenith, SFString disabledNodes, SFNode callbackList, SFNode transform, SFNode light, SFNode icon, SFNode iconMaterial, SFNode iconTexture, SFNode tsunshape, SFNode transformGroup, SFNode iconSeparator ]
+        fields [ SFDouble azimuth, SFDouble zenith, SFString disabledNodes, SFNode callbackList, SFNode transform, SFNode light, SFNode icon, SFNode iconMaterial, SFNode iconTexture, SFNode tsunshape, SFNode transformGroup, SFNode iconSeparator ]
         azimuth 1.5707964
         zenith 0.52359879
         transform 
@@ -27,12 +27,12 @@ TSceneKit {
         }
         icon 
         TLightShape {
-          fields [ SFFloat xMin, SFFloat xMax, SFFloat zMin, SFFloat zMax, SFFloat delta ]
-          xMin -1.0482095
-          xMax 0.0482096
-          zMin -0.27971694
-          zMax 0.17092849
-          delta 0.048209585
+          fields [ SFDouble xMin, SFDouble xMax, SFDouble zMin, SFDouble zMax, SFDouble delta ]
+          xMin -1.048209525634943
+          xMax 0.04820960086642426
+          zMin -0.2797169461747987
+          zMax 0.1709284782311304
+          delta 0.04820958523958754
 
         }
         iconMaterial 
@@ -76,7 +76,7 @@ TSceneKit {
         }
         tsunshape 
         SunshapePillbox {
-          fields [ SFFloat irradiance, SFFloat thetaMax ]
+          fields [ SFDouble irradiance, SFDouble thetaMax ]
           irradiance 1000
           thetaMax 0.00465
 
@@ -99,7 +99,7 @@ TSceneKit {
         Transform {
           translation 0 0 0 =
           DEF +1 TSceneTracker {
-            fields [ SFFloat m_azimuth, SFFloat m_zenith ]
+            fields [ SFDouble m_azimuth, SFDouble m_zenith ]
             m_azimuth 1.5707964 =
             USE Light+0            . azimuth
             m_zenith 0.52359879 =
@@ -145,7 +145,7 @@ TSceneKit {
                     AppearanceKit {
                       material 
                       DEF Specular_Standard_Material MaterialStandardSpecular {
-                        fields [ SFFloat m_reflectivity, SFFloat m_sigmaSlope, SFEnum m_distribution, MFColor m_ambientColor, MFColor m_diffuseColor, MFColor m_specularColor, MFColor m_emissiveColor, MFFloat m_shininess, MFFloat m_transparency ]
+                        fields [ SFDouble m_reflectivity, SFDouble m_sigmaSlope, SFEnum m_distribution, MFColor m_ambientColor, MFColor m_diffuseColor, MFColor m_specularColor, MFColor m_emissiveColor, MFFloat m_shininess, MFFloat m_transparency ]
                         m_reflectivity 1
 
                       }
@@ -153,7 +153,7 @@ TSceneKit {
                     }
                     shape 
                     DEF Trough_AsymmetricCPC ShapeTroughAsymmetricCPC {
-                      fields [ SFFloat rInt, SFFloat rExt, SFFloat acceptanceAngleCW, SFFloat acceptanceAngleCCW, SFFloat truncationAngle, SFFloat truncationOrigin, SFFloat length ]
+                      fields [ SFDouble rInt, SFDouble rExt, SFDouble acceptanceAngleCW, SFDouble acceptanceAngleCCW, SFDouble truncationAngle, SFDouble truncationOrigin, SFDouble length ]
 
                     }
 
@@ -162,6 +162,7 @@ TSceneKit {
                     fields [ SFEnum renderCaching, SFEnum boundingBoxCaching, SFEnum renderCulling, SFEnum pickCulling, SFNode callbackList, SFNode pickStyle, SFNode appearance, SFNode units, SFNode transform, SFNode texture2Transform, SFNode childList, SFNode tracker, SFNode topSeparator ]
                     transform 
                     Transform {
+                      translation 0 0.02 0
 
                     }
                     childList 
@@ -176,8 +177,8 @@ TSceneKit {
                           fields [ SFEnum renderCaching, SFEnum boundingBoxCaching, SFEnum renderCulling, SFEnum pickCulling, SFNode callbackList, SFNode pickStyle, SFNode appearance, SFNode units, SFNode transform, SFNode texture2Transform, SFNode childList, SFNode materialBinding, SFNode normalBinding, SFNode textureCoordinateBinding, SFNode shapeHints, SFNode coordinate3, SFNode coordinate4, SFNode normal, SFNode textureCoordinate2, SFNode textureCoordinateFunction, SFNode profileCoordinate2, SFNode profileCoordinate3, SFNode profileList, SFNode localTransform, SFNode shape, SFNode topSeparator, SFNode shapeSeparator ]
                           shape 
                           DEF Cylinder ShapeCylinder {
-                            fields [ SFFloat radius, SFFloat length, SFFloat phiMax, SFEnum activeSide ]
-                            radius 0.0099999998
+                            fields [ SFDouble radius, SFDouble length, SFDouble phiMax, SFEnum activeSide ]
+                            radius 0.009999999800000003
 
                           }
 
