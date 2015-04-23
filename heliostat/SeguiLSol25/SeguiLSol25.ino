@@ -9,25 +9,9 @@
 // this software is released under the GPL V.3 
 // for more recents update, check out the git page: https://github.com/osefrance/SolarConcentrator
 //**************************************************************
-/*
-it features a simple microstepping of 1/16th of 200 full steps stepper motor and makes a microstep every 54seconds or so.
-
-will need to add:
-
-release 1:
-- reset to 0 position using an optical sensor
-- first setup on the morning (need rtc implementation) using 2 light sensors on the absorber edges
-- last setup on the evening in order to understand the error and use the new delay time for the day after.
-release 2:
-- multiple mirrors using an IC (need wire implementation)
-release 3:
-- safety shut off of the mirrors
-- statistical information
-...
-*/
 
 
-// include : soon wire, rtc
+// include : soon wire , rtc
 //  #include 
 
 
@@ -45,7 +29,7 @@ int counta = 0;
 int mil = 10;  // if not debugging, set it = 1000;
 int nsteps = 1; // if not debugging set it =1;
 
-// Stepper Pin configuuration
+// Stepper Pin configuration
     int stepPin = 3;
     int dirPin = 2;  
     int enablePin = 6;
@@ -55,6 +39,11 @@ int nsteps = 1; // if not debugging set it =1;
   int totStep = steps*microStep;
   long totSec = 86400;
   long del = (totSec/totStep)*mil;
+
+// state machine variables
+
+long previousMillis = 0;
+
 
 /* for later implementations: 
 // optical Limit Switch Pin Assignment
