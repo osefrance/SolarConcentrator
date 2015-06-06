@@ -3,7 +3,6 @@
   int stepPin = 3;// pin controling each step
   int dirPin = 2;//direction fo rotation
   int enablePin = 6;// 
-  int microStepPin = 4;//activate miucro steps (LOW: full steps, HIGH: microsteps (as wired in Seguisol 2)
   int a;// steps totolizer
   int aLmax;//value of a at reading of the peak brithness of the left photoresistance
   int aRmax;//value of a at reading of the peak brithness of the left photoresistance
@@ -32,7 +31,7 @@
   int peakR;//number of steps corresponding to peak of right photoresistance
   int DeltaPhL;// photoresistance reading - maximum value of past readings
   int DeltaPhR;// photoresistance reading - maximum value of past readings
-  int microTrig = 0; //
+  
   void setup() {
     Serial.begin(9600);
     pinMode(pushbut, INPUT);
@@ -40,7 +39,6 @@
     pinMode(stepPin,OUTPUT);
     pinMode(enablePin, OUTPUT);
     digitalWrite(enablePin,LOW); // Set Enable low
-    digitalWrite(microStepPin,LOW); // Set Enable low
     }
   
   void loop() {
@@ -51,7 +49,6 @@
    PhRmax = 0;  //reset right Photoresistance max value
   pushbutstate = digitalRead(pushbut);  // readi if the push button to start a centering procedure is ON
   if (pushbutstate == HIGH ) {
-        microTrig = 0;
     digitalWrite(dirPin,HIGH);   // Set Dir high
       while(peaks < 2){   //a while loop to keep scanning while the two peaks have not yet been identified
        search();   //a module that search for the two peaks
@@ -146,32 +143,14 @@
    void search(){// MODULE LOOKS FOR MIROR POSITION FOR REFLECTION ON RECEPTOR
     PhLA = analogRead(PhL);// left photoresistance reading      
     PhRA = analogRead(PhR);// right photoresistance reading
- 
- if (microTrig > 0)  {
-                   digitalWrite(dirPin,HIGH); // change direction
-          turn();
-           turn();
-            turn();
-             turn();
-              turn();
-                  digitalWrite(dirPin,LOW); // change direction
-          
-   
-          digitalWrite(microStepPin,HIGH); // enter in microstep 
-
- 
-  }
-         else{
- 
     if (PhLA > PhLmax) {
           PhLmax = PhLA; // peak reading left photoresistance 
           aLmax = a;// record steps number corresponding to photoresistance max reading
        }
          else{
            x = PhLmax - PhLA;
-             if (x > 150){ //differential max reading - current reading for potential peak 
+             if (x > 90){ //differential max reading - current reading for potential peak 
                 peakL = 1; //a POTENTIAL left peak
-                microTrig = 1;
              }
           }
         if (PhRA > PhRmax) {
@@ -180,12 +159,15 @@
             }
             else{
              x = PhRmax - PhRA;
-               if (x > 150){ //differential max reading - current reading for potential peak
+               if (x > 90){ //differential max reading - current reading for potential peak
             peakR = 1; //a POTENTIAL right peak
            }  
            }
-  turn();
-      Serial.print("steps");
+    digitalWrite(stepPin,HIGH);  
+    delay(1); //  
+    digitalWrite(stepPin,LOW); 
+    delay(5); //
+    Serial.print("steps");
     Serial.print(",");
     Serial.print(a); 
     Serial.print(",");
@@ -213,11 +195,5 @@
     } 
     peaks = peakL + peakR;//peaks will stop the loop if two peaks have been identified and are within reasonable distance
     a++;
-   }
- }   
-void turn() {
-  digitalWrite(stepPin,HIGH);  
-    delay(1); //  
-    digitalWrite(stepPin,LOW); 
-    delay(5); //
-} 
+   }   
+ 

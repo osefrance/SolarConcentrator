@@ -18,8 +18,8 @@
   int PhLA;//lecture analogique A0 horizontale gauche
   int PhRA;//lecture analogique A1 horizontale droite
   int Insol;//indicator of insolation: average reading of two photoresistances
-  int PhLmax = 0;//lecture la valeur maximale en PWM de la photoresistance gauche
-  int PhRmax = 0;//lecture actuelle de la valeur en PWM de la photoresistance droite
+  int PhLmax = 30;//lecture la valeur maximale en PWM de la photoresistance gauche
+  int PhRmax = 30;//lecture actuelle de la valeur en PWM de la photoresistance droite
   int ThL = A4;//left thermistance, WHITE wire
   int ThR = A5;// right thermoresistance, PURPLE wire
   int ThLA;//analog reading of left thermistance
@@ -72,7 +72,7 @@
     Serial.print(",");
     Serial.print(a);
     Serial.print(",");
-    digitalWrite(dirPin,LOW); // change direction
+    digitalWrite(dirPin,HIGH); // change direction
     for (x = 0; x < a; x++) {//goes back the number of steps for reflection centered on the receptor
    turn();
    Serial.println(x);
@@ -166,7 +166,7 @@
        }
          else{
            x = PhLmax - PhLA;
-             if (x > 150){ //differential max reading - current reading for potential peak 
+             if (x > 200){ //differential max reading - current reading for potential peak 
                 peakL = 1; //a POTENTIAL left peak
                 microTrig = 1;
              }
