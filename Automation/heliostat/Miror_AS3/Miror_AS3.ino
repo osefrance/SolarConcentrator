@@ -1,10 +1,37 @@
+
+
+//**************************************************************
+//  Open Souce Écologie - Solar Heliostat controller
+//  Name: SeguiLSol25 - Miror_b
+//  Authors: Andrea Sannuto @ndrsan, Jean Walter, 
+//  Website: www.osefrance.fr  @OSE_Fr
+//  Rev 001 
+//  Date 08 April 2015
+// This Readme files is meant to collect all the intended modification that need to be integrated into the software.
+// this software is released under the GPL V.3 
+// for more recents update, check out the git page: https://github.com/osefrance/SolarConcentrator
+//**************************************************************
+
+/*
+release 1:
+- change routines to classes and use State-machine instead of using delay
+- reset to 0 position using an optical sensor (as interrupt)
+- first setup on the morning (need rtc implementation) using 2 light sensors on the absorber edges (sensors as interrupts)
+- last setup on the evening in order to understand the error and use the new delay time for the day after.
+release 2:
+- multiple mirrors using an IC (need wire implementation)
+release 3:
+- safety shut off of the mirrors
+- statistical information
+...
+*/
+
  
   //STEPPER
   int stepPin = 3;// pin controling each step
   int dirPin = 2;//direction fo rotation
   int enablePin = 6;// 
   int microStepPin = 4;//activate miucro steps (LOW: full steps, HIGH: microsteps (as wired in Seguisol 2)
-  int microStep = 16; // set the number of microsteps of your wiring.
   int a;// steps totolizer
   int aLmax;//value of a at reading of the peak brithness of the left photoresistance
   int aRmax;//value of a at reading of the peak brithness of the left photoresistance
@@ -214,15 +241,7 @@
       peakR = 0;// peaks are likely to be noise, scanning continue
     } 
     peaks = peakL + peakR;//peaks will stop the loop if two peaks have been identified and are within reasonable distance
-    
- if (microTrig = 1){
-          a++;
-          }
-      else {
-        a = a+microStep;
-        }
-
-
+    a++;
    }
  }   
 void turn() {
