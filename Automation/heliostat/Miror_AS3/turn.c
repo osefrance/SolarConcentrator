@@ -14,4 +14,9 @@
 class turn 
 {
 
-int 
+int allVar
+
+
+
+
+}

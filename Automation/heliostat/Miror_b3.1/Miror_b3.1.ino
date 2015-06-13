@@ -215,7 +215,7 @@
     } 
     peaks = peakL + peakR;//peaks will stop the loop if two peaks have been identified and are within reasonable distance
     
- if (microTrig = 1){
+ if (microTrig == 1){
           a++;
           }
       else {
