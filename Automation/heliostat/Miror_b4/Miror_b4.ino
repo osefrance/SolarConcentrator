@@ -10,10 +10,18 @@
   int dirPin3 = 39;//pin direction fo rotation of motor 2 (white wire)
   int enablePin3 = 41;// pin to block moteur of motor 2 (green wire)
 
-  int a;// steps totolizer
+  int a1;// steps totolizer motor 1
+  int a2;// steps totolizer motor 2
+  int a3;// steps totolizer motor 3
+  
   //int stepscount; //number of steps totaliser, will be set to 0 during miror zeroing - Cma also zeroed then
-  int aLmax;//value of a at reading of the peak brithness of the left photoresistance
-  int aRmax;//value of a at reading of the peak brithness of the left photoresistance
+  int a1Lmax;//value of a at reading of the peak brithness of the left photoresistance
+  int a1Rmax;//value of a at reading of the peak brithness of the left photoresistance
+  int a2Lmax;//value of a at reading of the peak brithness of the left photoresistance
+  int a2Rmax;//value of a at reading of the peak brithness of the left photoresistance
+  int a3Lmax;//value of a at reading of the peak brithness of the left photoresistance
+  int a3Rmax;//value of a at reading of the peak brithness of the left photoresistance
+
   int x;//all purpose varaible; delta reading between peak photoresistance and current reading
   int y;// all purpose variable
   int z;// all purpose variable
@@ -23,7 +31,6 @@
   int PhR = A1;// right photoresistance MARON wire
   int PhLA;//lecture analogique A0 horizontale gauche
   int PhRA;//lecture analogique A1 horizontale droite
-  int Insol;//indicator of insolation: average reading of two photoresistances
   int peaks; // number of steps indicating  both peaks have been passed
   int peakL;//number of steps corresponding to peak of left photoresistance
   int peakR;//number of steps corresponding to peak of right photoresistance
@@ -56,11 +63,18 @@
   void setup() {
     Serial.begin(9600);
     pinMode(pushbut, INPUT);
-    pinMode(dirPin,OUTPUT);
-    pinMode(stepPin,OUTPUT);
-    pinMode(enablePin, OUTPUT);
-    digitalWrite(enablePin,LOW); // Set Enable low
-    digitalWrite(microStepPin,LOW); // Set Enable low
+    pinMode(dirPin1,OUTPUT);
+    pinMode(stepPin1,OUTPUT);
+    pinMode(enablePin1, OUTPUT);
+    digitalWrite(enablePin1,LOW); // Set Enable low
+    pinMode(dirPin2,OUTPUT);
+    pinMode(stepPin2,OUTPUT);
+    pinMode(enablePin2, OUTPUT);
+    digitalWrite(enablePin2,LOW); // Set Enable low
+    pinMode(dirPin3,OUTPUT);
+    pinMode(stepPin3,OUTPUT);
+    pinMode(enablePin3, OUTPUT);
+    digitalWrite(enablePin3,LOW); // Set Enable low
     }
   
   void loop() {// MOTOR 2 ONLY (CENTRAL MIROR)
