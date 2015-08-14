@@ -1,8 +1,11 @@
  
   //STEPPER
-  int stepPin[2] = {31, 37, 43}; // pin 31 motor 0; 33 motor 1; 35 motor 2 (yellow wires)
-  int dirPin[2] = {33, 39, 45}; // pin 33 motor 0; 33 motor 1; 35 motor 2 (white wires)
-  int enablePin[2] = {35, 41, 47}; //pin 35 motor 0; 33 motor 1; 35 motor 2 (green wire)
+  int stepPin[] = {31, 37, 43}; // pin 31 motor 0; 33 motor 1; 35 motor 2 (yellow wires)
+  int dirPin[] = {33, 39, 45}; // pin 33 motor 0; 33 motor 1; 35 motor 2 (white wires)
+  int enablePin[] = {35, 41, 47}; //pin 35 motor 0; 33 motor 1; 35 motor 2 (green wire)
+  int stepping; // Pin value for loops (yellow wires)
+  int sensrot; // Pin value for loops (white wires)
+  int enabling; //Pin value for loops (green wire)
   int M;//motor number 0 to 2, 1 center
 
   //int a0;// steps totolizer motor 1
@@ -12,17 +15,18 @@
   //int stepscount; //number of steps totaliser, will be set to 0 during miror zeroing - Cma also zeroed then
   int aLmax;//value of a at reading of the peak brithness of the left photoresistance within loops
   int aRmax;//value of a at reading of the peak brithness of the left photoresistancewithin loops
-  int a0Lmax;//value of a at reading of the peak brithness of the left photoresistance
-  int a0Rmax;//value of a at reading of the peak brithness of the left photoresistance
-  int a1Lmax;//value of a at reading of the peak brithness of the left photoresistance
-  int a1Rmax;//value of a at reading of the peak brithness of the left photoresistance
-  int a2Lmax;//value of a at reading of the peak brithness of the left photoresistance
-  int a2Rmax;//value of a at reading of the peak brithness of the left photoresistance
+  //int a0Lmax;//value of a at reading of the peak brithness of the left photoresistance
+  //int a0Rmax;//value of a at reading of the peak brithness of the left photoresistance
+  //int a1Lmax;//value of a at reading of the peak brithness of the left photoresistance
+ // int a1Rmax;//value of a at reading of the peak brithness of the left photoresistance
+ // int a2Lmax;//value of a at reading of the peak brithness of the left photoresistance
+ // int a2Rmax;//value of a at reading of the peak brithness of the left photoresistance
 
   int a;//steps within loop
   int x;//all purpose varaible; delta reading between peak photoresistance and current reading
   int y;// all purpose variable
   int z;// all purpose variable
+  int stepscount;//variable for calculations within loops
   
    // OPTIC SENSORS: PHOTORESISTANCES, THERMISTANCES ET  PHOTOVOLTAIC CELL
   int PhL = A0; // left photoresistance RED wire
@@ -41,19 +45,16 @@
   int ThR = A5;// right thermoresistance, PURPLE wire
   int ThLA;//analog reading of left thermistance
   int ThRA;// analog reading of right resistance
-  int LedYL = A12; //Left yellow LED (yellow wire)
-  int LedBL = A13; // Left blue LED (blue wire)
-  int LedYR = A14;// Right yellow LED (yellow wire)
-  int LedBR = A15;// Rifght blue LED (blue wire)
+  int LedYL = A14; //Left yellow LED (green wire)
+  int LedYR = A15;// Right yellow LED (blue wire)
   int LedYLA; //Analog reading of left yellow LED
-  int LedBLA; //Analog reading of left blue LED
   int LedYRA; //Analog reading of right yellow LED
-  int LedBRA; //Analog reading of right blue LED
+
   
     //PUSH PIN TO INITIATE A MIROR SEARCH FOR THE CENTRAL RECEPTOR  
   int pushbut = 22;// push button to start serach
   int pushbutstate;// push button state reading:
-  int FDCM[2] = {24, 26, 28}; // pin 24 fin de course 0; 26 Fin de course 1(center); 28 motor 2
+  int FDCM[] = {24, 26, 28}; // pin 24 fin de course 0 (blue); 26 Fin de course 1(center, white); 28 motor 2 (green)
 
   
   void setup() {
@@ -81,12 +82,15 @@
    PhRmax = 0;  //reset right Photoresistance max value
   pushbutstate = digitalRead(pushbut);  // readi if the push button to start a centering procedure is ON
   if (pushbutstate == HIGH ) {
-    while (FDCM1 == LOW){//  ZEROING MIROR-MOTOR 1
-      digitalWrite(dirPin[1],HIGH); // gives direction
-      turn(1);//miror moves until position switch faces ground
+    M = 1;
+    sensrot = dirPin[M];
+    stepping = stepPin[M];
+    while (FDCM[M] == LOW){//  ZEROING MIROR-MOTOR 1
+      digitalWrite(sensrot,HIGH); // gives direction
+      turn();//miror moves until position switch faces ground
     }
-    a1 = 0;//ste motor positions in steps set to zero
-    search(1);   //a module that search for the two peaks
+    a = 0;//ste motor positions in steps set to zero
+    search();   //a module that search for the two peaks
    }  // the two peaks ahve been identified, we now move the miror back the the centrola point between the peaks 
    
    //PROGRAM STARTS HERE IF PUSH BUTTON IS OFF
@@ -121,7 +125,7 @@
   Serial.println(",");     
    if(y > 30){//activate motor if differatial temperature between therm exceeds 30 ua
      if(z < 0){//checks for which direction the motor should be set
-       digitalWrite(dirPin2,HIGH); // change direction
+       digitalWrite(sensrot,HIGH); // change direction
          for(x=0; x<33;x++){
            turn();
            a = a +1;
@@ -132,7 +136,7 @@
          Serial.print(",");
         }
       else{
-         digitalWrite(dirPin2,LOW); // change direction
+         digitalWrite(sensrot,LOW); // change direction
          for(x=0; x<34;x++){
            turn();
            a = a - 1;
@@ -154,9 +158,8 @@
 
 
  
-    void search(M){//    MODULE LOOKS FOR MIROR POSITION FOR REFLECTION ON RECEPTOR
-     digitalWrite(dirPin[M],HIGH);   // Set Dir high
-     a = 0;
+    void search(){//    MODULE LOOKS FOR MIROR POSITION FOR REFLECTION ON RECEPTOR
+     digitalWrite(sensrot,HIGH);   // Set Dir high
     while (peaks < 2){//routine while two candidate peaks havbe not yet been identified
       PhLA = analogRead(PhL);// left photoresistance reading      
       PhRA = analogRead(PhR);// right photoresistance reading
@@ -192,12 +195,12 @@
         Serial.print(",");
         Serial.print(stepscount);
         Serial.print(",");
-        digitalWrite(dirPin[1],LOW); // change direction
+        digitalWrite(sensrot,LOW); // change direction
         for (x = 0; x < stepscount; x++) {//goes back the number of steps for reflection centered on the receptor
-          turn(1);
+          turn();
           }
         } 
-    turn(1);
+    turn();
     Serial.print("steps");
     Serial.print(",");
     Serial.print(a); 
@@ -225,9 +228,9 @@
 
 
   
-void turn(M){ //MODULE ACTIVATES ONE STEP
-  digitalWrite(stepPin[M],HIGH);  
+void turn(){ //MODULE ACTIVATES ONE STEP
+  digitalWrite(stepping,HIGH);  
     delay(1); //  
-    digitalWrite(stepPin[M],LOW); 
+    digitalWrite(stepping,LOW); 
     delay(1); //
 } 
