@@ -17,7 +17,7 @@
 // 5 main functions (to translate in class)
 // function 0 = Awake
 // function 1 = Find Midpoint / calibration : it must correct the steps based on the speed the sun is moving.
-// function 2 = Offset mirror 1 and n
+// function 2 = Offset mirror x to keep the photodiode always slightly under the threshold(or a special threshold) in order to drive all motors to the central position of the 
 // function 3 = Heliostat / Follow the sun, thanks to the offset mirrors and the interrupts of the photoresistors positioned on the edge of the absorber
 // function 4 = sleep. go in position to sleep and sleep.
 
@@ -37,6 +37,8 @@ int mirrorSel = 1; // index for the mirror selector when using the MCP23017 it w
 const int dirPin = 2;  // This determines the direction of rotation of the motor. Changes to this input do not take effect until the next STEP rising edge.
 const int enablePin = 6; // This input turns on or off all of the FET outputs. When set to a logic high, the outputs are disabled. When set to a logic low, the internal control enables the outputs as required. The translator inputs STEP, DIR, and MSx, as well as the internal sequencing logic, all remain active, independent of ENABLE input state.
 const int microStepPin = 4; // This input turns on or off all of the FET outputs. When set to a logic high, the outputs are disabled. When set to a logic low, the internal control enables the outputs as required. The translator inputs STEP, DIR, and MSx, as well as the internal sequencing logic, all remain active, independent of ENABLE input state.
+
+
 
 const int endStopPin[] = {8} ; // the pin of connection of the endstop. should use a i/o port extender as input in stead of the direct Arduino ports.
 
@@ -58,7 +60,9 @@ int jButPin = 13;
 
 
 // Variables
-int dir ; // set the direction
+const int dirEst = 1; // Change this to correct toward east direction movement of the motors. 
+const int dirWest = 0; // Change this to correct toward est direction movement of the motors.  
+// int dir ; // set the direction --- removed if using dirEst / dirWest
 int spd ; // set the speed - the higher the slower
 
 // initialize the matrix of position based on time ****
@@ -74,19 +78,20 @@ const int pdPin[]= {A3} ; // matrix of the photodiodes. - say A3 for the east ph
 const float pdThreshold = 3 ; // threshold at which the sun hits the photodiode, used for calibration and for heliostat function
 
 void setup() {
-  // put your setup code here, to run once:
-/*setup of motor's pins connected on the arduino (commented out if you use the MCP23017
+
+/*
+setup of motor's pins connected on the arduino - commented out when using the MCP23017
 for (int a=0; a<mirrorsQ; a++){
   pinMode(stepPin[a], OUTPUT);
 }
 */
 
 pinMode(dirPin, OUTPUT);
-pinMode(enablePin, OUTPUT);  
-pinMode(microStepPin, OUTPUT);  
-pinMode(pushWButPin, INPUT);  
-pinMode(pushEButPin, INPUT);  
-pinMode(pushCalibrateButPin, INPUT);  
+pinMode(enablePin, OUTPUT);
+pinMode(microStepPin, OUTPUT);
+pinMode(pushWButPin, INPUT);
+pinMode(pushEButPin, INPUT);
+pinMode(pushCalibrateButPin, INPUT);
 
 
 // MCP23017 setup
@@ -119,26 +124,29 @@ void loop() {
   
    // int jButRead = digitalRead(jButPin);
   
-   if (digitalRead(jButPin) == HIGH )   { selectMirror(); }
+  if (digitalRead(jButPin) == HIGH )   { 
+      selectMirror(); 
+      }
   
-   if (digitalRead(pushWButPin) == HIGH ) {
-      dir = 0;
-      turn(dir,mirrorSel);//moves the mirror(s)
+  if (digitalRead(pushWButPin) == HIGH ) {
+      turn(dirWest,mirrorSel);//moves the mirror(s) toward West
       return ;
       }
+
   if (digitalRead(pushEButPin) == HIGH ) {
-      dir = 1;
-      turn(dir, mirrorSel);//moves the mirror(s)
+      turn(dirEst, mirrorSel);//moves the mirror(s) toward East
       return ;
       }  
   
   if (digitalRead(pushCalibrateButPin) == HIGH ) {
-      calibrate();
+      calibrate(); // launches the calibration function 
+      offsetPosition (); // set the mirror x to the offset position in order to highlight the photodiode 
       return ;
       } 
   
   
-  heliostat(); // tries to flash the 
+  heliostat(); // keeps the photodiode always under the threshold and moves all mirrors when the reading is higher than the threshold
+
 
 }
 
@@ -180,7 +188,8 @@ if (debugmode == 1) {   Serial.println (spin); }
      Wire.endTransmission();
   */
  
- delayMicroseconds(spd); // Delay will be removed with a state-machine variable ****
+delayMicroseconds(spd); // Delay will be removed with a state-machine variable ****
+
 if (debugmode == 1) {   Serial.print ("mirrorSel ; mirrorsQbin");  Serial.print (mirrorSel); Serial.print (" ; "); Serial.println (mirrorsQbin); }
 
 }
@@ -193,12 +202,12 @@ void selectMirror() {
 
 float readPd (int photoDiodedPin) // read the photo diode 
 {
- int pdRead = analogRead( photoDiodedPin);
- float pdVolt = pdRead / 1024.0 * 5.0;  // can be avoided to have a float variable as the pdread can be used directly and threshold can be set witha  value between 1 and 1024.
- if (debugmode == 1)
+int pdRead = analogRead( photoDiodedPin);
+float pdVolt = pdRead / 1024.0 * 5.0;  // can be avoided to have a float variable as the pdread can be used directly and threshold can be set with a  value between 1 and 1024. ****
+if (debugmode == 1)
   {
   Serial.begin (9600);
-  Serial.print("inside pdRead : pdVolt ; pdRead = ");
+  Serial.print("inside readPD sub-Function : pdVolt ; pdRead = ");
   Serial.print(pdVolt);
   Serial.print(" ; ");
   Serial.print(pdRead);
@@ -212,12 +221,11 @@ void heliostat(){ // keeps the reflected image of the sun of all mirrors centere
 
   if (debugmode == 1) {   Serial.print ("inside the heliostat function");  }
   
-  //  following part is duplicated in findEh() just mirrorSel sohuld be 255 in stead of anything else. Heliostat() function can be simplified to call a modified version of findEh ****
+  //  following part is duplicated in findERW() just mirrorSel should be 255 to move all mirrors in stead of anything else. Heliostat() function can be simplified to call a modified version of findERW ****
   
   float pdreading = readPd (pdPin[0]);
   while(pdreading < pdThreshold)  {
-      dir = 1;
-      turn(dir, 255);//moves all mirrors
+      turn(dirEst, 255);//moves all mirrors
       pdreading = readPd (pdPin[0]);
       }  
 }  
@@ -225,15 +233,16 @@ void heliostat(){ // keeps the reflected image of the sun of all mirrors centere
 void calibrate(){ // performs the calibration sequence and memorize the matrix of values = Find0, FindEl event, FindEh event, perform the correction check,
   find0(); // Find the 0 position of each mirrors
   findERW(); // find the ray width on the eastern sensor per each motor
-  
+  //  findCorrection ();   // find the correction factor in term of steps per minute that should be applied to the mid position of each blade 
+  //  midPosition (); // set all motors to the mid position 
+ 
 } 
 
 void find0(){ // find the 0 position for all mirrors
   mirrorSel = 1;
   for (int i = 0; i < mirrorsQ; i++) { //   sets all mirrors to 0 position
     while (endStopPin == LOW) { 
-         dir = 0;
-         turn(dir, mirrorSel);//moves the mirror(s)
+         turn(dirWest, mirrorSel);//moves the mirror(s)
     }
     selectMirror();
   }
@@ -253,20 +262,18 @@ void findERW(){ // find the ray width on the eastern sensor AKA:
  
      float pdreading = readPd (pdPin[0]); // updates the pdreading before entering the loop. I could readPd(pdPin[0]) inside the while condition and remove 2 lines of code (? to test) ****
      while(pdreading < pdThreshold)  {
-      dir = 1;
-      turn(dir, mirrorSel);//moves all mirrors
+      turn(dirEst, mirrorSel);//moves the mirrors one by one
       stepsEl[i]++; // increase the steps counter of 1 while in the loop.
       pdreading = readPd (pdPin[0]); // updates the pdreading at the end of the loop
       }
-      // timeEl[i] = currentTime();  **** develop the function current time
+      // timeEl[i] = currentTime();  **** develop the function current time based on the clock DS1302 (yet to integrate)
       stepsEh[i] = stepsEl[i]; // increase the steps counter of 1 while in the loop.
       while(pdreading > pdThreshold)  {
-      dir = 1;
-      turn(dir, mirrorSel);//moves all mirrors
+      turn(dirEst, mirrorSel);//moves the mirrors one by one
       stepsEh[i]++ ;// increase the steps counter of 1 while in the loop.
       pdreading = readPd (pdPin[0]); // updates the pdreading at the end of the loop
       }
-      // timeEh[i] = currentTime();  **** develop the function current time
+      // timeEh[i] = currentTime();  **** develop the function current time based on the clock DS1302 (yet to integrate)
    rayWidth[i] = steps-eh[i]- steps-el[i];
    selectMirror(); // select the next mirror
    if (mirrorSel == 1) { return;}

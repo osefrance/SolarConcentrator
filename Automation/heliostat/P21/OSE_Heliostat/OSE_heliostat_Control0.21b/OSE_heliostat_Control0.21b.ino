@@ -74,6 +74,8 @@ pinMode(enablePin, OUTPUT);
 pinMode(microStepPin, OUTPUT);  
 pinMode(pushWButPin, INPUT);  
 pinMode(pushEButPin, INPUT);  
+pinMode(jButPin, INPUT);  
+
 
 // MCP23017 setup
  Wire.begin(); // wake up I2C bus

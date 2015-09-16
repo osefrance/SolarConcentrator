@@ -16,7 +16,7 @@ char buffer[3];
      
 int SCL_PIN=8;//D0
 int SDA_PIN=9; //D1
-int RST_PIN=10;//RST
+int RST_PIN=12;//RST
 int DC_PIN=11; //DC
 
  void LED_CLS(void);
