@@ -30,7 +30,14 @@
 // currently I will move the motors of both a and b ports at the same time.  
 // need to move both serial extender at 0x20  and 0x21
 // integrating the photodiode reactivity with threshold on potentiometer.
-
+/*Ver 0.3
+ * integrated - functions to follow the sun with photodiode. - photodiode threshold controlled by potentiometer. - software ready for the 20 motors. 
+ * need to -  integrate the hardware address selection for the mcp23017 and - change the mirrorselect function currently set to 255 by default in order to move all mirrors always.
+ * 
+ */
+/*
+* Steppers motors enable the stepper motors (hold torque) with the push button connected on pin 9  follow the hold variables and function.
+ */
 
 const int mirrorsQ = 20; // how many mirrors should be controlled. if through the MCP23017 they should be connected incrementally starting from port GPA0 of MCP23017
 int mirrorsQbin = 1; // mirrorsQconversion to consecutive bits rappresenting each single motors
@@ -40,7 +47,7 @@ int mirrorsQbin = 1; // mirrorsQconversion to consecutive bits rappresenting eac
 int mirrorSel = 1; // index for the mirror selector when using the MCP23017 it will be set to 255 to step on all motors at the same time (set to 0 if used as index for stepPin[] matrix, set to 1 if used as pointer for the MCP23017 port extender
 
 const int dirPin = 2;  // This determines the direction of rotation of the motor. Changes to this input do not take effect until the next STEP rising edge.
-const int enablePin = 6; // This input turns on or off all of the FET outputs. When set to a logic high, the outputs are disabled. When set to a logic low, the internal control enables the outputs as required. The translator inputs STEP, DIR, and MSx, as well as the internal sequencing logic, all remain active, independent of ENABLE input state.
+const int enablePin = 6; // This input turns on or off all of the FET outputs of the pololu driver A4988. When set to a logic high, the outputs are disabled. When set to a logic low, the internal control enables the outputs as required. The translator inputs STEP, DIR, and MSx, as well as the internal sequencing logic, all remain active, independent of ENABLE input state.
 const int microStepPin = 4; // This input turns on or off all of the FET outputs. When set to a logic high, the outputs are disabled. When set to a logic low, the internal control enables the outputs as required. The translator inputs STEP, DIR, and MSx, as well as the internal sequencing logic, all remain active, independent of ENABLE input state.
 
 
@@ -53,6 +60,9 @@ int potPin = A0; // potentiometer to set the movement speed of the motor - tempo
  int jButPin = 10; // mirror select pin
  // int jPotxPin = A3; // 
 //  int jPotyPin = A1; // 
+const int holdStepButPin = 9; // This is the button that enables or disable the hold torque of the stepper motors (enable / disable stepper motor = engage / disengage)
+int holdStepVal = 0 ; // variable to read the value
+
 
 // DEBUG MODE 1 on, 0 off. check serial for output of the variables value.
   int debugmode = 0;
@@ -83,7 +93,7 @@ pinMode(microStepPin, OUTPUT);
 pinMode(pushWButPin, INPUT);  
 pinMode(pushEButPin, INPUT);  
 pinMode(jButPin, INPUT);  
-
+pinMode(holdStepButPin, INPUT);    // Set the switch pin as input
 
 // MCP23017 setup
  Wire.begin(); // wake up I2C bus
@@ -121,14 +131,25 @@ for (int a=1; a<= mirrorsQ; a++) { // converts the last motor decimal identifier
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-digitalWrite(enablePin,HIGH ); // set to low to keep the stepper motors engaged in the position. it consumes power but essential in direct drive with environmental perturbances (wind) 
+
+ if (digitalRead(holdStepButPin) == HIGH )   { holdStep(); } // pushing the button enable or disable the hold step function of the stepper motor (enable the stepper motor)
+
+ if (holdStepVal == 1) {  // if holdstep button was pressed once the holdstep value was changed to 1 and the pololu driver will be enabled (setting enable pin to low) engaging the motors to hold torque.
+   digitalWrite(enablePin,LOW ); // set to low to keep the stepper motors engaged in the position. it consumes power but essential in direct drive with environmental perturbances (wind) 
+   } else {  // if holdstep button was pressed the second time or by default when variable are initialized, the holdstep value is set to 0 and the pololu driver will be disabled (setting enable pin to high) disengaging the motors that are left to move freely by hand.
+   digitalWrite(enablePin,HIGH ); // set to low to keep the stepper motors engaged in the position. it consumes power but essential in direct drive with environmental perturbances (wind) 
+  } 
+ 
+
+ 
  digitalWrite(microStepPin, HIGH); // microstepping enabled (based on hardware configuration HHH = 1/16th)
 // digitalWrite(microStepPin, LOW); // microstepping disabled
 
 // int jButRead = digitalRead(jButPin);
 
 if (digitalRead(jButPin) == HIGH )   { selectMirror(); }
+
+
 
 if (digitalRead(pushWButPin) == HIGH  ) {
     dir = 0;
@@ -283,8 +304,21 @@ if (debugmode == 1) {
       mirrorSel = mirrorSel *2;
       if (mirrorSel == mirrorsQbin) { mirrorSel = 255;}
       else if (mirrorSel > mirrorsQbin) { mirrorSel = 1;}
-      while (digitalRead(jButPin) == HIGH )   {}
-*/
+*/      
+while (digitalRead(jButPin) == HIGH )   {}
+
+  }
+ void holdStep() {
+   if (holdStepVal == 0) {             
+       holdStepVal = 1;
+    } else {                        
+        holdStepVal = 0;
+ }
+
+
+
+while (digitalRead(holdStepButPin) == HIGH )   {} // waits for the button to be released
+ 
   }
 
 
