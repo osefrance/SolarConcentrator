@@ -38,13 +38,28 @@
 /*
 *  additional feature: Enable the stepper motors (hold torque) with the push button connected on pin 9  follow the hold variables and function.
  */
+ /* 
+  *  0.31 Additional feature : case select
+  */
 
 const int mirrorsQ = 20; // how many mirrors should be controlled. if through the MCP23017 they should be connected incrementally starting from port GPA0 of MCP23017
-int mirrorsQbin = 1; // mirrorsQconversion to consecutive bits rappresenting each single motors
+// int mirrorsQbin = 1; // mirrorsQconversion to consecutive bits rappresenting each single motors
 // int stepPin[] = {3, 5, 7}; // 1 high and low cycle makes 1 step of the stepper . minimum 1 uSec per state - "A low-to-high transition on the STEP input sequences the translator and advances the motor one increment. "
 
 
 int mirrorSel = 1; // index for the mirror selector when using the MCP23017 it will be set to 255 to step on all motors at the same time (set to 0 if used as index for stepPin[] matrix, set to 1 if used as pointer for the MCP23017 port extender
+
+// matrices pour qddresser le MCP23017 
+const int portMCP[] = {B00000001,B00000010,B00000100, B00001000, B00010000,B00100000,B01000000,B10000000,B11111111} ; // enabling 1 port GP at a time. sequence for each pin is GP7 GP6 GP5 GP4 GP3 GP2 GP1 GP0
+const int addMCP[] = {0x20,0x21}; // mcp23017 hardware address setting. (on MCP23S17 IOCON HAEN must be set to enable
+const int gpioMCP[] = {0x12, 0x13}; // the address of each GP gpio when IOCON.BANK = 0 ; GPIOA = 12 ; GPIOB = 13
+
+//pointers 
+int port_p=0;
+int add_p=0;
+int gpio_p=0;
+
+
 
 const int dirPin = 2;  // This determines the direction of rotation of the motor. Changes to this input do not take effect until the next STEP rising edge.
 const int enablePin = 6; // This input turns on or off all of the FET outputs of the pololu driver A4988. When set to a logic high, the outputs are disabled. When set to a logic low, the internal control enables the outputs as required. The translator inputs STEP, DIR, and MSx, as well as the internal sequencing logic, all remain active, independent of ENABLE input state.
@@ -107,6 +122,12 @@ pinMode(holdStepButPin, INPUT);    // Set the switch pin as input
  Wire.beginTransmission(0x20);
  Wire.write(0x01); // IODIRB register
  Wire.write(0x00); // set all of port B to outputs
+/*
+ Wire.beginTransmission(0x20);
+ Wire.write(0x00); // IODIRA register
+ Wire.write(0x00); // set all of port A to outputs
+ Wire.endTransmission();
+ */
  Wire.endTransmission();
 
 
@@ -125,9 +146,11 @@ if (debugmode == 1) {
   Serial.begin (9600); 
   }
  
-for (int a=1; a<= mirrorsQ; a++) { // converts the last motor decimal identifier in to binary for later comparison in selectMirror() when switching from one motor to the next.
+/*
+ * for (int a=1; a<= mirrorsQ; a++) { // converts the last motor decimal identifier in to binary for later comparison in selectMirror() when switching from one motor to the next.
    mirrorsQbin= mirrorsQbin * 2;
    }
+ */
 }
 
 void loop() {
@@ -139,37 +162,59 @@ void loop() {
    } else {  // if holdstep button was pressed the second time or by default when variable are initialized, the holdstep value is set to 0 and the pololu driver will be disabled (setting enable pin to high) disengaging the motors that are left to move freely by hand.
    digitalWrite(enablePin,HIGH ); // set to low to keep the stepper motors engaged in the position. it consumes power but essential in direct drive with environmental perturbances (wind) 
   } 
- 
-
- 
  digitalWrite(microStepPin, HIGH); // microstepping enabled (based on hardware configuration HHH = 1/16th)
-// digitalWrite(microStepPin, LOW); // microstepping disabled
+// digitalWrite(microStepPin, LOW); // microstepping disabled 
 
 // int jButRead = digitalRead(jButPin);
 
 if (digitalRead(jButPin) == HIGH )   { selectMirror(); }
+if (digitalRead(pushWButPin) == HIGH  ) { turn_west(); return;}
+if (digitalRead(pushEButPin) == HIGH ) { turn_east(); return;}  
+heliostatOn();
+}
 
+void turn_west() {
+  dir = 0;
+  if (mirrorSel == mirrorsQ) {
+   turn_all(dir);  
+  } else {
+   matrixSelect(mirrorSel);
+   turn_once (dir);
+  }
+}
 
-
-if (digitalRead(pushWButPin) == HIGH  ) {
-    dir = 0;
-    turn(dir,mirrorSel);//moves the mirror(s)
-    return ;
-    }
-if (digitalRead(pushEButPin) == HIGH ) {
+void turn_east() {
     dir = 1;
-    turn(dir, mirrorSel);//moves the mirror(s)
-    return ;
-    }  
+  if (mirrorSel == mirrorsQ) {
+   turn_all(dir);  
+  } else {
+   matrixSelect(mirrorSel);
+   turn_once (dir);
+  }
+}  
 
-float pdreading = readPd (pdPin[0]);
-if (pdreading < pdThreshold)  {
+void heliostatOn () {
+    float pdreading = readPd (pdPin[0]);
+    if (pdreading < pdThreshold)  { 
     dir = 1;
-    turn(dir, 255);//moves all mirrors
+    turn_all(dir);
     }  
 }
 
-void turn (int dirT, int spin){
+void turn_once(int dire) { turn(dire, port_p, add_p, gpio_p);} //moves the mirror(s) 
+
+void turn_all(int direAll){
+    matrixSelect(33);
+    turn_once(direAll);//moves the mirror(s)
+    matrixSelect(34);
+    turn_once(direAll);//moves the mirror(s)
+    matrixSelect(35);
+    turn_once(direAll);//moves the mirror(s)
+    matrixSelect(36);
+    turn_once(direAll);//moves the mirror(s)
+    }
+
+void turn (int dirT, int port, int add, int gpio){
     digitalWrite(enablePin, LOW);
     digitalWrite(dirPin, dirT);
 
@@ -180,146 +225,88 @@ void turn (int dirT, int spin){
   delayMicroseconds(spd);
   digitalWrite(stepPin[spin], LOW);
   delayMicroseconds(spd);
-*/
 
-  if (debugmode == 1) {   
-  Serial.print ("inside turn, variables: spin ; dirT "); 
-  Serial.print (spin); 
-  Serial.print (" ; "); 
+const int portMCP[] = {B00000001,B00000010,B00000100, B00001000, B00010000,B00100000,B01000000,B10000000,B11111111} ; // enabling 1 port GP at a time. sequence for each bit/pin is GP7 GP6 GP5 GP4 GP3 GP2 GP1 GP0
+const int addMCP[] = {0x20,0x21}; // mcp23017 hardware address setting. (on MCP23S17 IOCON HAEN must be set to enable
+const int gpioMCP[] = {0x12, 0x13}; // the address of each GP gpio when IOCON.BANK = 0 ; GPIOA = 12 ; GPIOB = 13
 
-  Serial.println (dirT); 
-  } 
 
-// MCP23017 address 0x20
-
-// turn A Ports ON based on mirrorSel (Make 1 step)
-  Wire.beginTransmission(0x20);
-       Wire.write(0x12); // GPIOA
-       Wire.write(spin); // port A
+*/ 
+ 
+// turn  Ports ON based on mirrorSel and select matrix (Make 1 step)
+  Wire.beginTransmission(addMCP[add]); // MCP device on 0x20 or 0x21
+       Wire.write(gpioMCP[gpio]); // GPIOA or GPIOB
+       Wire.write(portMCP[port]); // ports on GP gpio
   Wire.endTransmission();
   
-  if (debugmode == 1) {   
-  Serial.print ("inside turn - after if port A, variables: spin ; dirT "); 
-  Serial.print (spin); 
-  Serial.print (" ; "); 
-
-  Serial.println (dirT); 
-  } 
-
-     // B Ports
-  //   int mirrorpin = spin - 255;
-     Wire.beginTransmission(0x20);
-       Wire.write(0x13); // GPIOB
-       Wire.write(spin); // port B
-     Wire.endTransmission();
-     
-  if (debugmode == 1) {   
-  Serial.print ("inside turn - after if port B, variables: spin ; mirrorpin ; dirT "); 
-  Serial.print (spin); 
-  Serial.print (" ; "); 
-  //  Serial.print (mirrorpin); 
-  Serial.print (" ; "); 
-  Serial.println (dirT); 
-  } 
-
-// MCP23017 address 0x21
-
-// turn A Ports ON based on mirrorSel (Make 1 step)
-  Wire.beginTransmission(0x21);
-       Wire.write(0x12); // GPIOA
-       Wire.write(spin); // port A
-  Wire.endTransmission();
-  
-  if (debugmode == 1) {   
-  Serial.print ("inside turn - after if port A, variables: spin ; dirT "); 
-  Serial.print (spin); 
-  Serial.print (" ; "); 
-
-  Serial.println (dirT); 
-  } 
-
-     // B Ports
-  //   int mirrorpin = spin - 255;
-     Wire.beginTransmission(0x21);
-       Wire.write(0x13); // GPIOB
-       Wire.write(spin); // port B
-     Wire.endTransmission();
-     
-  if (debugmode == 1) {   
-  Serial.print ("inside turn - after if port B, variables: spin ; mirrorpin ; dirT "); 
-  Serial.print (spin); 
-  Serial.print (" ; "); 
-  //  Serial.print (mirrorpin); 
-  Serial.print (" ; "); 
-  Serial.println (dirT); 
-  } 
-
-
-     
   delayMicroseconds(spd);
-
-
-  // turn OFF A Ports first MCP23017 serial 0x20
- 
-  Wire.beginTransmission(0x20);
-       Wire.write(0x12); // GPIOA
-       Wire.write(0x00); // port A
+  
+  // turn OFF Ports of MCP23017 
+  Wire.beginTransmission(addMCP[add]); // MCP device on 0x20 or 0x21
+       Wire.write(gpioMCP[gpio]); // GPIOA or GPIOB
+       Wire.write(0x00); // ports on GP gpio
   Wire.endTransmission();
- 
- // turn off B Ports first MCP23017 serial  0x20
- 
-  Wire.beginTransmission(0x20);
-       Wire.write(0x13); // GPIOB
-       Wire.write(0x00); // port B
-  Wire.endTransmission();
-
-  // turn OFF A Ports second MCP23017 serial 0x21 
- 
-  Wire.beginTransmission(0x21);
-       Wire.write(0x12); // GPIOA
-       Wire.write(0x00); // port A
-  Wire.endTransmission();
- 
- // turn off B Ports second MCP23017 serial  0x21
- 
-  Wire.beginTransmission(0x21);
-       Wire.write(0x13); // GPIOB
-       Wire.write(0x00); // port B
-  Wire.endTransmission();
- 
- 
- delayMicroseconds(spd);
-if (debugmode == 1) {   
-      Serial.print ("mirrorSel ; mirrorsQbin ");  
-      Serial.print (mirrorSel); 
-      Serial.print (" ; "); 
-      Serial.println (mirrorsQbin); 
-    }
+  
+delayMicroseconds(spd);
 
 }
 
  void selectMirror() {
-  mirrorSel = 255;
-/*      
-      mirrorSel = mirrorSel *2;
-      if (mirrorSel == mirrorsQbin) { mirrorSel = 255;}
-      else if (mirrorSel > mirrorsQbin) { mirrorSel = 1;}
-*/      
-while (digitalRead(jButPin) == HIGH )   {}
-
+  mirrorSel = mirrorSel + 1 ; // using the switch case mode
+  if (mirrorSel > mirrorsQ) { mirrorSel = 1;}
+  while (digitalRead(jButPin) == HIGH )   {}
   }
- void holdStep() {
+
+void matrixSelect(int selected){
+  switch(selected){
+    case 1:   port_p=0; add_p=0; gpio_p=0;   break;
+    case 2:   port_p=1; add_p=0; gpio_p=0;   break;
+    case 3:   port_p=2; add_p=0; gpio_p=0;   break;
+    case 4:   port_p=3; add_p=0; gpio_p=0;   break;
+    case 5:   port_p=4; add_p=0; gpio_p=0;   break;
+    case 6:   port_p=5; add_p=0; gpio_p=0;   break;
+    case 7:   port_p=6; add_p=0; gpio_p=0;   break;
+    case 8:   port_p=7; add_p=0; gpio_p=0;   break;
+    case 9:   port_p=0; add_p=0; gpio_p=1;   break;
+    case 10:  port_p=1; add_p=0; gpio_p=1;   break;
+    case 11:  port_p=2; add_p=0; gpio_p=1;   break;
+    case 12:  port_p=3; add_p=0; gpio_p=1;   break;
+    case 13:  port_p=4; add_p=0; gpio_p=1;   break;
+    case 14:  port_p=5; add_p=0; gpio_p=1;   break;
+    case 15:  port_p=6; add_p=0; gpio_p=1;   break;
+    case 16:  port_p=7; add_p=0; gpio_p=1;   break;
+    case 17:  port_p=0; add_p=1; gpio_p=0;   break;
+    case 18:  port_p=1; add_p=1; gpio_p=0;   break;
+    case 19:  port_p=2; add_p=1; gpio_p=0;   break;
+    case 20:  port_p=3; add_p=1; gpio_p=0;   break;
+    case 21:  port_p=4; add_p=1; gpio_p=0;   break;
+    case 22:  port_p=5; add_p=1; gpio_p=0;   break;
+    case 23:  port_p=6; add_p=1; gpio_p=0;   break;
+    case 24:  port_p=7; add_p=1; gpio_p=0;   break;
+    case 25:  port_p=0; add_p=1; gpio_p=1;   break;
+    case 26:  port_p=1; add_p=1; gpio_p=1;   break;
+    case 27:  port_p=2; add_p=1; gpio_p=1;   break;
+    case 28:  port_p=3; add_p=1; gpio_p=1;   break;
+    case 29:  port_p=4; add_p=1; gpio_p=1;   break;
+    case 30:  port_p=5; add_p=1; gpio_p=1;   break;
+    case 31:  port_p=6; add_p=1; gpio_p=1;   break;
+    case 32:  port_p=7; add_p=1; gpio_p=1;   break;
+    case 33:  port_p=8; add_p=0; gpio_p=0;   break;
+    case 34:  port_p=8; add_p=1; gpio_p=0;   break;
+    case 35:  port_p=8; add_p=0; gpio_p=1;   break;
+    case 36:  port_p=8; add_p=1; gpio_p=1;   break;
+    }
+  }
+  
+  
+void holdStep() {
    if (holdStepVal == 0) {             
        holdStepVal = 1;
     } else {                        
         holdStepVal = 0;
- }
-
-
-
+    }
 while (digitalRead(holdStepButPin) == HIGH )   {} // waits for the button to be released
- 
-  }
+}
 
 
 float readPd (int photoDiodedPin) // read the photo diode 
